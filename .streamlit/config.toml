@@ -1,0 +1,4 @@
+# サイドバー上部の自動ページ一覧（app / graph / …）を非表示にし、
+# common.render_sidebar_nav のカスタムメニューのみ使う。
+[client]
+showSidebarNavigation = false

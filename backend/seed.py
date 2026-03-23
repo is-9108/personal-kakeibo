@@ -1,6 +1,8 @@
-"""初回起動時のマスタ投入（仕様書 2.3 カテゴリ定義・支払い方法）。"""
+"""初回起動時のマスタ投入（仕様書 2.3・固定費初期値）。"""
 
 from __future__ import annotations
+
+from datetime import datetime, timezone
 
 from . import models
 from .database import SessionLocal
@@ -26,9 +28,15 @@ _PAYMENT_METHOD_SEED: list[tuple[str, int]] = [
     ("現金", 3),
 ]
 
+# (固定費名, 紐づけるカテゴリ名, 金額, 毎月の日, 有効1/無効0) — カテゴリ名で categories を引く
+_FIXED_COST_SEED: list[tuple[str, str, int, int, int]] = [
+    ("家賃", "家賃", 87220, 25, 1),
+    ("NISA", "NISA", 10000, 16, 1),
+]
+
 
 def ensure_master_data() -> None:
-    """categories / payment_methods が1件も無いときだけ、仕様どおりの初期行を投入する。"""
+    """マスタ・固定費が空のときだけ初期行を投入する。"""
     db = SessionLocal()
     try:
         if db.query(models.Category).first() is None:
@@ -49,6 +57,28 @@ def ensure_master_data() -> None:
                     models.PaymentMethod(
                         name=name,
                         sort_order=sort_order,
+                    )
+                )
+            db.commit()
+
+        if db.query(models.FixedCost).first() is None:
+            now = datetime.now(timezone.utc)
+            for fc_name, category_name, amount, day_of_month, is_active in _FIXED_COST_SEED:
+                cat = (
+                    db.query(models.Category)
+                    .filter(models.Category.name == category_name)
+                    .first()
+                )
+                if cat is None:
+                    continue
+                db.add(
+                    models.FixedCost(
+                        name=fc_name,
+                        category_id=cat.id,
+                        amount=amount,
+                        day_of_month=day_of_month,
+                        is_active=is_active,
+                        updated_at=now,
                     )
                 )
             db.commit()

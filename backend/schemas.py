@@ -9,8 +9,8 @@ class Transaction(BaseModel):
     type: str
     category_id: int
     amount: int
-    payment_method_id: int
-    memo: str
+    payment_method_id: int | None = None
+    memo: str = ""
 
 class FixedCost(BaseModel):
     amount: int
