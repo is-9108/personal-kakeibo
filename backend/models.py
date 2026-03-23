@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, UniqueConstraint
 from .database import Base
 
 #カテゴリマスタ
@@ -45,6 +45,7 @@ class FixedCost(Base):
 #月次レポート
 class Report(Base):
     __tablename__ = "reports"
+    __table_args__ = (UniqueConstraint("year", "month", name="uq_reports_year_month"),)
     id = Column(Integer, primary_key=True, index=True)
     year = Column(Integer, index=True)
     month = Column(Integer, index=True)
